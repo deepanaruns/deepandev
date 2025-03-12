@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git branch: 'dev', url: 'https://github.com/deepanaruns/deepandev.git'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh 'chmod a+x build.sh'
+                    echo 'build.sh is now script file'
+                    sh './build.sh'
+                }
+            }
+        }
+        stage('Deploy to Docker Hub') {
+            steps {
+                script {
+                    if (env.GIT_BRANCH == 'dev') {
+                        sh './build.sh'
+                    } else if (env.GIT_BRANCH == 'master') {
+                        sh 'chmod a+x deploy.sh'
+                        echo 'deploy.sh is now script file'
+                        sh './deploy.sh'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Build completed"
+        }
+    }
+}
